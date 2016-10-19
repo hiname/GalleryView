@@ -20,10 +20,11 @@ import android.widget.LinearLayout;
  */
 public class Gallery extends AppCompatActivity {
     public Context mContext = null;
-
     int resId[] = {
-            R.drawable.mov01, R.drawable.mov02, R.drawable.mov03, R.drawable.mov04, R.drawable.mov05, R.drawable.mov06,
-            R.drawable.mov07, R.drawable.mov08, R.drawable.mov09, R.drawable.mov10, R.drawable.mov11,
+            R.drawable.mov01, R.drawable.mov02, R.drawable.mov03,
+            R.drawable.mov04, R.drawable.mov05, R.drawable.mov06,
+            R.drawable.mov07, R.drawable.mov08, R.drawable.mov09,
+            R.drawable.mov10, R.drawable.mov11,
     };
 
     @Override
@@ -37,12 +38,10 @@ public class Gallery extends AppCompatActivity {
             public void run() {
                 int height = (resId.length / 3 + 1) * 232;
                 Log.d("d", "height : " + height);
-                 LinearLayout.LayoutParams gvLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, height);
-                 gv.setLayoutParams(gvLp);
-
+                LinearLayout.LayoutParams gvLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, height);
+                gv.setLayoutParams(gvLp);
             }
         });
-
         final ImageAdapter imageAdapter = new ImageAdapter(this);
         gv.setAdapter(imageAdapter);
         gv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -85,12 +84,8 @@ public class Gallery extends AppCompatActivity {
             } else {
                 imageView = (ImageView) convertView;
             }
-
             imageView.setImageResource(resId[position]);
             return imageView;
         }
-
-
     }
-
 }
