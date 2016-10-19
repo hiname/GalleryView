@@ -7,17 +7,21 @@ import android.view.View;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    TextView tvProfile, tvGallery, tvInfo;
+    TextView tvProfile, tvGallery, tvMplayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        tvProfile = (TextView) findViewById(R.id.btnProfile);
+        tvProfile = (TextView) findViewById(R.id.tvProfile);
         tvProfile.setOnClickListener(this);
 
-        tvGallery = (TextView) findViewById(R.id.btnGallery);
+        tvGallery = (TextView) findViewById(R.id.tvGallery);
         tvGallery.setOnClickListener(this);
+
+        tvMplayer = (TextView) findViewById(R.id.tvMplayer);
+        tvMplayer.setOnClickListener(this);
+
     }
 
     @Override
@@ -26,6 +30,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             startActivity(new Intent(this, Profile.class));
         } else if (v == tvGallery) {
             startActivity(new Intent(this, Gallery.class));
+        } else if (v == tvMplayer) {
+            startActivity(new Intent(this, Mplayer.class));
         }
     }
 }

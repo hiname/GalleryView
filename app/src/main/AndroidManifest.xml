@@ -27,6 +27,7 @@
         <activity android:name=".Profile"/>
         <activity android:name=".ImagePopup"/>
         <activity android:name=".Gallery"/>
+        <activity android:name=".Mplayer"/>
         <!-- <activity android:name=".Gallery"/> -->
     </application>
 

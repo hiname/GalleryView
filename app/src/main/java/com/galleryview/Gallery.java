@@ -2,7 +2,6 @@ package com.galleryview;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -20,7 +19,7 @@ import android.widget.LinearLayout;
  */
 public class Gallery extends AppCompatActivity {
     public Context mContext = null;
-    int resId[] = {
+    static final int resIds[] = {
             R.drawable.mov01, R.drawable.mov02, R.drawable.mov03,
             R.drawable.mov04, R.drawable.mov05, R.drawable.mov06,
             R.drawable.mov07, R.drawable.mov08, R.drawable.mov09,
@@ -32,11 +31,11 @@ public class Gallery extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.gallery);
         final GridView gv = (GridView) findViewById(R.id.imgGrid);
-        // BitmapDrawable bd=(BitmapDrawable) this.getResources().getDrawable(resId[0]);
+        // BitmapDrawable bd=(BitmapDrawable) this.getResources().getDrawable(resIds[0]);
         gv.post(new Runnable() {
             @Override
             public void run() {
-                int height = (resId.length / 3 + 1) * 232;
+                int height = (resIds.length / 3 + 1) * 232;
                 Log.d("d", "height : " + height);
                 LinearLayout.LayoutParams gvLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, height);
                 gv.setLayoutParams(gvLp);
@@ -63,7 +62,7 @@ public class Gallery extends AppCompatActivity {
         }
 
         public int getCount() {
-            return resId.length;
+            return resIds.length;
         }
 
         public Object getItem(int position) {
@@ -71,7 +70,7 @@ public class Gallery extends AppCompatActivity {
         }
 
         public long getItemId(int position) {
-            return resId[position];
+            return resIds[position];
         }
 
         public View getView(int position, View convertView, ViewGroup parent) {
@@ -84,7 +83,7 @@ public class Gallery extends AppCompatActivity {
             } else {
                 imageView = (ImageView) convertView;
             }
-            imageView.setImageResource(resId[position]);
+            imageView.setImageResource(resIds[position]);
             return imageView;
         }
     }

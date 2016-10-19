@@ -8,10 +8,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -22,8 +19,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -41,17 +36,14 @@ public class ImagePopup extends AppCompatActivity {
         Intent i = getIntent();
         Bundle extras = i.getExtras();
         int resCnt = extras.getInt("resCnt", 0);
-
         ll = new LinearLayout(this);
         ll.setOrientation(LinearLayout.VERTICAL);
-
         can = new Can(this, resCnt);
         can.setBackgroundColor(Color.BLACK);
         LinearLayout.LayoutParams canLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0);
         canLp.weight = 0.9f;
         can.setLayoutParams(canLp);
         ll.addView(can);
-
         Button btn = new Button(this);
         btn.setText("저장");
         LinearLayout.LayoutParams bntLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0);
@@ -64,10 +56,7 @@ public class ImagePopup extends AppCompatActivity {
                 FileSave.saveView(can, nowDateTime);
             }
         });
-
         ll.addView(btn);
-
-
         setContentView(ll);
     }
 
@@ -86,19 +75,12 @@ public class ImagePopup extends AppCompatActivity {
         Context context = null;
         boolean isReady = false;
         int cvWidth, cvHeight;
-        int[] resIds = {
-                R.drawable.mov01,
-                R.drawable.mov02,
-                R.drawable.mov03,
-                R.drawable.mov04,
-                R.drawable.mov05,
-                R.drawable.mov06,
-                R.drawable.mov07,
-                R.drawable.mov08,
-                R.drawable.mov09,
-                R.drawable.mov10,
-                R.drawable.mov11,
-        };
+        //        int[] resIds = {
+//                R.drawable.mov01, R.drawable.mov02, R.drawable.mov03,
+//                R.drawable.mov04, R.drawable.mov05, R.drawable.mov06,
+//                R.drawable.mov07, R.drawable.mov08, R.drawable.mov09,
+//                R.drawable.mov10, R.drawable.mov11,
+//        };
         boolean isTchEnable = true;
 
         public Can(Context context, int resCnt) {
@@ -107,7 +89,7 @@ public class ImagePopup extends AppCompatActivity {
             // setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
             // paint.setColor(Color.BLACK);
             this.resCnt = resCnt;
-            bmp = BitmapFactory.decodeResource(context.getResources(), resIds[resCnt]);
+            bmp = BitmapFactory.decodeResource(context.getResources(), Gallery.resIds[resCnt]);
             isReady = false;
             postDelayed(new Runnable() {
                 @Override
@@ -126,14 +108,16 @@ public class ImagePopup extends AppCompatActivity {
                     invalidate();
                 }
             }, 500);
-
         }
 
-        public void init(int resCnt) {
-            Log.d("d", "init()");
+        public void reLoad(int resCnt) {
+            Log.d("d", "reLoad()");
             if (bmp != null) bmp.recycle();
-            bmp = BitmapFactory.decodeResource(context.getResources(), resIds[resCnt]);
+            bmp = BitmapFactory.decodeResource(context.getResources(), Gallery.resIds[resCnt]);
             isSlide = false;
+            isTryLeft = false;
+            isTryRight = false;
+
             postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -175,6 +159,9 @@ public class ImagePopup extends AppCompatActivity {
         Rect dstRect = null;
         Bitmap bmp;
 
+        boolean isTryLeft = false;
+        boolean isTryRight = false;
+
         @Override
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
@@ -183,7 +170,6 @@ public class ImagePopup extends AppCompatActivity {
             float py = (imgH * scale / 2);
             float minX, maxX;
             float minY, maxY;
-
             if (!isSlide) {
                 if ((imgW * scale) < cvWidth) {
                     minX = -((imgW * scale)) / 2 + px;
@@ -196,35 +182,35 @@ public class ImagePopup extends AppCompatActivity {
                     minY = cvHeight - (imgH * scale) + py;
                     maxY = py;
                 }
-                if (imgX < minX) imgX = minX;
-                else if (imgX > maxX) imgX = maxX;
+                if (imgX < minX) {
+                    imgX = minX;
+                    isTryLeft = true;
+                }
+                else if (imgX > maxX) {
+                    imgX = maxX;
+                    isTryRight = true;
+                }
                 if (imgY < minY) imgY = minY;
                 else if (imgY > maxY) imgY = maxY;
             }
-
             dstRect = new Rect((int) (imgX - px), (int) (imgY - py), (int) (imgX + (imgW * scale) - px), (int) (imgY + (imgH * scale) - py));
             paint.setAlpha(alpha);
             canvas.drawBitmap(bmp, null, dstRect, paint);
 
-//            Log.d("d", "start - - -");
-//            Log.d("d", "cv W,H : " + cvWidth + ", " + cvHeight);
-//            Log.d("d", "imgX,Y : " + imgX + ", " + imgY);
-//            Log.d("d", "imgW,H : " + imgW + ", " + imgH);
-//            Log.d("d", "px, py : " + px + ", " + py);
-//            Log.d("d", "scale : " + scale);
-//            Log.d("d", "dstRect : " + dstRect.toString());
-//            Log.d("d", "- - - end");
         }
 
         int slideCnt = 0;
         boolean isSlide = false;
 
         public void slideLeft() {
+            if (!isTryLeft) return;
+
             Log.d("d", "resCnt : " + resCnt);
-            if (resCnt >= resIds.length - 1) {
+            if (resCnt >= Gallery.resIds.length - 1) {
                 Toast.makeText(context, "마지막 이미지입니다.", Toast.LENGTH_SHORT).show();
                 return;
             }
+
             isTchEnable = false;
             isSlide = true;
             Log.d("d", "slideLeft()");
@@ -238,7 +224,7 @@ public class ImagePopup extends AppCompatActivity {
                     if (slideCnt++ < 20) new Handler().postDelayed(this, 60);
                     else {
                         resCnt++;
-                        init(resCnt);
+                        reLoad(resCnt);
                     }
                 }
             };
@@ -246,10 +232,14 @@ public class ImagePopup extends AppCompatActivity {
         }
 
         public void slideRight() {
+
+            if (!isTryRight) return;
+
             if (resCnt <= 0) {
                 Toast.makeText(context, "첫번째 이미지입니다.", Toast.LENGTH_SHORT).show();
                 return;
             }
+
             isTchEnable = false;
             isSlide = true;
             Log.d("d", "slideRight()");
@@ -263,7 +253,7 @@ public class ImagePopup extends AppCompatActivity {
                     if (slideCnt++ < 20) new Handler().postDelayed(this, 60);
                     else {
                         resCnt--;
-                        init(resCnt);
+                        reLoad(resCnt);
                     }
                 }
             };
@@ -302,6 +292,16 @@ public class ImagePopup extends AppCompatActivity {
                 case MotionEvent.ACTION_MOVE:
                     moveX = event.getX(0);
                     moveY = event.getY(0);
+
+                    if (isTryLeft) {
+                        float slideValue = Math.abs(tmpX.get(tmpX.size() - 1) - tmpX.get(0));
+                        if(slideValue > 0) isTryLeft = false;
+                    } else if (isTryRight) {
+                        float slideValue = Math.abs(tmpX.get(tmpX.size() - 1) - tmpX.get(0));
+                        if(slideValue < 0) isTryRight = false;
+                    }
+
+
                     Log.d("d", "move_x, y : " + moveX + ", " + moveX);
                     if (isMult) {
                         downX2 = event.getX(1);
