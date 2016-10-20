@@ -30,5 +30,5 @@
         <activity android:name=".Mplayer"/>
         <!-- <activity android:name=".Gallery"/> -->
     </application>
-
+    <!--사실장훈이형이아니고 윤영이에요-->
 </manifest>

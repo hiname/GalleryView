@@ -10,6 +10,9 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
@@ -24,8 +27,17 @@ import java.util.ArrayList;
 /**
  * Created by USER on 2016-10-19.
  */
-public class Mplayer extends AppCompatActivity implements View.OnClickListener, MediaPlayer.OnCompletionListener {
+public class Mplayer extends AppCompatActivity implements View.OnClickListener, MediaPlayer.OnCompletionListener, CompoundButton.OnCheckedChangeListener {
     ArrayList<String> musicListStr = new ArrayList<String>();
+    int pics[] = {
+            R.drawable.mov01,
+            R.drawable.mov02,
+            R.drawable.mov03,
+            R.drawable.mov04,
+            R.drawable.mov05,
+            R.drawable.mov06,
+            R.drawable.mov07,
+    };
     String musicDir = Environment.getExternalStorageDirectory().toString() + "/Music";
     // String musicDir = "/sdcard/Music";
     MediaPlayer mplayer = null;
@@ -40,6 +52,8 @@ public class Mplayer extends AppCompatActivity implements View.OnClickListener, 
     ListView listView;
     boolean isShuffle, isRepeat;
     int seekValue = 0;
+    ImageView imgThumb;
+    TextView tvMusicInfo;
 
     Handler h = new Handler();
 
@@ -50,10 +64,6 @@ public class Mplayer extends AppCompatActivity implements View.OnClickListener, 
             seekBar.setProgress(progress);
             tvTime.setText(dataFormat.format(progress));
             if (isPlaying) h.postDelayed(this, 900);
-
-            Log.d("d", "progress : " + progress);
-            Log.d("d", "mp.isPlaying() : " + mp.isPlaying());
-            Log.d("d", "isPlaying : " + isPlaying);
         }
     };
 
@@ -66,6 +76,10 @@ public class Mplayer extends AppCompatActivity implements View.OnClickListener, 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.mplayer);
+
+        imgThumb = (ImageView) findViewById(R.id.imgThumbnail);
+        tvMusicInfo = (TextView) findViewById(R.id.tvMusicInfo);
+
         File[] files = new File(musicDir).listFiles();
         for (File file : files) musicListStr.add(file.getName());
         //
@@ -74,6 +88,7 @@ public class Mplayer extends AppCompatActivity implements View.OnClickListener, 
         listView.setAdapter(arad);
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         listView.setItemChecked(selectPosition, true);
+        listView.setSelection(selectPosition);
         //
         selectFilePath = musicDir + "/" + musicListStr.get(selectPosition);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -89,6 +104,13 @@ public class Mplayer extends AppCompatActivity implements View.OnClickListener, 
         mp.setOnCompletionListener(this);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         seekBar = (SeekBar) findViewById(R.id.seekBar);
+        try {
+            mp.setDataSource(selectFilePath);
+            mp.prepare();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -105,23 +127,30 @@ public class Mplayer extends AppCompatActivity implements View.OnClickListener, 
         btnBackward = (Button) findViewById(R.id.btnBackward);
         btnPlayPause = (Button) findViewById(R.id.btnPlayPause);
         btnForward = (Button) findViewById(R.id.btnForward);
-
-        btnRepeat = (Button) findViewById(R.id.btnRepeat);
-        btnShuffle = (Button) findViewById(R.id.btnShuffle);
-        btnNone = (Button) findViewById(R.id.btnNone);
-
         btnBackward.setOnClickListener(this);
         btnPlayPause.setOnClickListener(this);
         btnForward.setOnClickListener(this);
 
-        btnRepeat.setOnClickListener(this);
-        btnShuffle.setOnClickListener(this);
-        btnNone.setOnClickListener(this);
+        btnRepeat = (CheckBox) findViewById(R.id.btnRepeat);
+        btnShuffle = (CheckBox) findViewById(R.id.btnShuffle);
+        btnNone = (CheckBox) findViewById(R.id.btnNone);
 
+        btnRepeat.setOnCheckedChangeListener(this);
+        btnShuffle.setOnCheckedChangeListener(this);
+        btnNone.setOnCheckedChangeListener(this);
+
+        tvMusicInfo.setText(getMusicInfo());
+    }
+
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        if (buttonView == btnRepeat) clickRepeat(isChecked);
+        else if (buttonView == btnShuffle) clickShuffle(isChecked);
+        else if (buttonView == btnNone) clickNone(isChecked);
     }
 
     Button btnBackward, btnPlayPause, btnForward;
-    Button btnRepeat, btnShuffle, btnNone;
+    CheckBox btnRepeat, btnShuffle, btnNone;
 
     final SimpleDateFormat dataFormat = new SimpleDateFormat("mm:ss");
 
@@ -130,31 +159,27 @@ public class Mplayer extends AppCompatActivity implements View.OnClickListener, 
         if (v == btnBackward) clickBackward();
         else if (v == btnPlayPause) clickPlayPause();
         else if (v == btnForward) clickForward();
-        else if (v == btnRepeat) clickRepeat();
-        else if (v == btnShuffle) clickShuffle();
-        else if (v == btnNone) clickNone();
     }
 
-    public void clickRepeat() {
-        isRepeat ^= true;
+    public void clickRepeat(boolean enable) {
+        isRepeat = enable;
         String msg = "";
         if(isRepeat) msg = "반복 ON";
         else  msg = "반복 OFF";
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 
-    public void clickShuffle() {
-        isShuffle ^= true;
+    public void clickShuffle(boolean enable) {
+        isShuffle = enable;
         String msg = "";
         if(isShuffle) msg = "셔플 ON";
         else  msg = "셔플 OFF";
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 
-    public void clickNone() {}
+    public void clickNone(boolean enable) {}
 
     public void clickBackward() {
-        if (isPlaying) btnPlayPause.callOnClick();
 
         if (!isShuffle && selectPosition <= 0) {
             if (isRepeat)
@@ -164,6 +189,8 @@ public class Mplayer extends AppCompatActivity implements View.OnClickListener, 
                 return;
             }
         }
+
+        if (isPlaying) btnPlayPause.callOnClick();
 
         if(isShuffle) selectPosition = (int)(Math.random() * musicListStr.size());
         else selectPosition--;
@@ -177,22 +204,30 @@ public class Mplayer extends AppCompatActivity implements View.OnClickListener, 
     public void clickPlayPause() {
         Log.d("d", "isChanged : " + isChanged);
         Log.d("d", "isPlaying : " + isPlaying);
-        if (isChanged && !isPlaying)
+        if (isChanged && !isPlaying) {
             try {
-                Log.d("d", "isChanged");
                 mp.stop();
                 mp.reset();
                 mp.setDataSource(selectFilePath);
-                Log.d("d", "selectFilePath : " + selectFilePath);
                 mp.prepare();
-                seekBar.setProgress(0);
-                tvTime.setText("00:00");
-                seekBar.setMax(mp.getDuration());
-                Log.d("d", "mp.getDuration() : " + mp.getDuration());
-                isChanged = false;
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
+            seekBar.setProgress(0);
+            tvTime.setText(dataFormat.format(0));
+            seekBar.setMax(mp.getDuration());
+            imgThumb.setImageResource(pics[selectPosition]);
+            String musicInfo = getMusicInfo();
+            tvMusicInfo.setText(musicInfo);
+            listView.smoothScrollToPosition(selectPosition);
+
+            isChanged = false;
+
+            Log.d("d", "selectFilePath : " + selectFilePath);
+            Log.d("d", "mp.getDuration() : " + mp.getDuration());
+
+        }
         //
         if (isPlaying) {
             Log.i("i", "pause");
@@ -211,8 +246,12 @@ public class Mplayer extends AppCompatActivity implements View.OnClickListener, 
 
     }
 
+    public String getMusicInfo() {
+        return "파일명\n" + musicListStr.get(selectPosition) + "\n\n"
+                + "재생길이 : " + dataFormat.format(mp.getDuration());
+    }
+
     public void clickForward() {
-        if (isPlaying) btnPlayPause.callOnClick();
 
         if (!isShuffle && (selectPosition >= (musicListStr.size() - 1))) {
             if (isRepeat)
@@ -222,6 +261,8 @@ public class Mplayer extends AppCompatActivity implements View.OnClickListener, 
                 return;
             }
         }
+
+        if (isPlaying) btnPlayPause.callOnClick();
 
         if(isShuffle) selectPosition = (int)(Math.random() * musicListStr.size());
         else selectPosition++;
@@ -239,5 +280,17 @@ public class Mplayer extends AppCompatActivity implements View.OnClickListener, 
 
         isPlaying = false;
         clickForward();
+    }
+
+    @Override
+    protected void onUserLeaveHint() {
+        super.onUserLeaveHint();
+        // if (isPlaying) btnPlayPause.callOnClick();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (isPlaying) btnPlayPause.callOnClick();
     }
 }
